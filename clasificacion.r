@@ -279,3 +279,29 @@ prediccion_nb <- predict(modelo_nb, newdata = prueba, type = "class")
 
 # Calculamos la matriz de confusión y otras métricas de evaluación
 confusionMatrix(prediccion_nb, prueba$LoanStatus)
+
+# Calcular probabilidades para k-NN
+prob_knn <- factor(modelo_knn, levels = c("N", "Y"))
+prob_knn <- as.numeric(prob_knn == "Y")
+
+# Calcular probabilidades para Árbol de Clasificación
+prob_arbol <- predict(modelo_arbol, newdata = prueba, type = "prob")[, "Y"]
+
+# Calcular probabilidades para Naive Bayes
+prob_nb <- predict(modelo_nb, newdata = prueba, type = "raw")[, "Y"]
+
+# Cargar la librería para curvas ROC
+install.packages("pROC")
+library(pROC)
+
+# Crear objetos ROC para cada modelo
+roc_knn <- roc(prueba$LoanStatus, prob_knn)
+roc_arbol <- roc(prueba$LoanStatus, prob_arbol)
+roc_nb <- roc(prueba$LoanStatus, prob_nb)
+
+# Graficar las curvas ROC
+plot(roc_knn, col = "blue", main = "Curvas ROC para los modelos", legacy.axes = TRUE)
+lines(roc_arbol, col = "red")
+lines(roc_nb, col = "green")
+legend("bottomright", legend = c("k-NN", "Árbol de Clasificación", "Naive Bayes"),
+       col = c("blue", "red", "green"), lty = 1, cex = 0.8)
